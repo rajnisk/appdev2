@@ -69,11 +69,46 @@ The API doesn't send HTML. It sends **JSON** (Javascript Object Notation). It lo
 
 ---
 
+## 6. Calling the API from Vue
+
+From your Vue app (e.g. in a `methods` block with the Options API), you call the Flask backend using `fetch` or a library like **axios**. CORS allows the browser to accept responses from a different origin (e.g. Vue on `localhost:5173`, Flask on `localhost:5001`).
+
+**GET (read tasks):**
+```javascript
+methods: {
+    async fetchTasks() {
+        const resp = await fetch('http://localhost:5001/api/tasks')
+        const data = await resp.json()
+        this.tasks = data.tasks  // or data, depending on your API shape
+    }
+}
+```
+
+**POST (create task):**
+```javascript
+methods: {
+    async addTask() {
+        const resp = await fetch('http://localhost:5001/api/tasks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: this.newTitle, completed: false })
+        })
+        const data = await resp.json()
+        this.tasks.push(data)  // or refresh the list
+    }
+}
+```
+
+Call `fetchTasks()` when the component loads (e.g. in a lifecycle hook) and wire `addTask` to your form's `@submit.prevent`. Once CORS is enabled on Flask, the Vue app and the API work together as one "bridge."
+
+---
+
 ## Key Takeaways
 
-1. **Resources**: Classes that organize your API logic.
-2. **HTTP Methods**: Standardized ways to tell the server what you want to do.
-3. **CORS**: The vital setting that enables Frontend-Backend communication.
+1. **Resources**: Classes that organize your API logic (GET, POST, PUT, DELETE).
+2. **HTTP Methods**: Standardized ways to tell the server what you want to do (CRUD).
+3. **CORS**: The vital setting that enables the Vue app to call the Flask API from another origin.
+4. **JSON**: The API speaks JSON; the frontend uses `fetch` (or axios) to send and receive it.
 
 ---
 

@@ -3,17 +3,21 @@
 **Format:** 1.5–2 hours per day · One gap day after Day 0  
 **Total:** 8 days (Day 0 → gap → Day 1 → … → Day 7)
 
+**Vue:** We use **Vue 3 with the Options API** (e.g. `data()`, `computed`, `methods`, `export default { }` in `.vue` files), not the Composition API / `<script setup>`.
+
 ---
 
 ## Overview
+
+We cover **Module 1 and Module 2 first** (Vite/Vue/SFCs, then reactivity/directives/events), then the rest of the stack.
 
 | Day   | Concepts & tools covered | Duration |
 |:------|:-------------------------|:---------|
 | **Day 0** | Setup & orientation | 1.5–2 hrs |
 | *Gap day* | — | — |
 | **Day 1** | Introduction, plan rest of bootcamp, revise APP Dev I | 1.5–2 hrs |
-| **Day 2** | Vite, Vue 3, SFCs, client-side rendering, SPA | 1.5–2 hrs |
-| **Day 3** | Reactivity, directives (v-model, v-for, v-if), events (@click, @submit.prevent) | 1.5–2 hrs |
+| **Day 2** | *(Module 1 first)* Vite, Vue 3 Options API, SFCs, client-side rendering, SPA | 1.5–2 hrs |
+| **Day 3** | *(Module 2)* Reactivity, data(), computed, directives (v-model, v-for, v-if), events | 1.5–2 hrs |
 | **Day 4** | REST API, JSON, Flask-RESTful, Resources, CRUD, CORS | 1.5–2 hrs |
 | **Day 5** | Stateless auth, JWT, localStorage, Bearer token, @jwt_required | 1.5–2 hrs |
 | **Day 6** | Redis caching, Flask-Caching; Celery, broker, .delay(), async tasks | 1.5–2 hrs |
@@ -67,8 +71,8 @@ No formal session. Optional: light recap of stack and APP Dev I (routing, Jinja,
 - Map the coming days to concepts (see overview table)
 
 ### 2. Plan the rest of the bootcamp (≈20 min)
-- **Day 2:** Vite, Vue 3, SFCs  
-- **Day 3:** Reactivity, directives, events  
+- **Day 2 (Module 1 first):** Vite, Vue 3 Options API, SFCs  
+- **Day 3 (Module 2):** Reactivity, data(), computed, directives, events  
 - **Day 4:** REST API, Flask-RESTful, CORS  
 - **Day 5:** JWT, localStorage, protected routes  
 - **Day 6:** Redis caching + Celery  
@@ -84,25 +88,28 @@ No formal session. Optional: light recap of stack and APP Dev I (routing, Jinja,
 
 ---
 
-## Day 2 — Vite, Vue 3, SFCs, Client-Side Rendering  
+## Day 2 — Module 1 first: Vite, Vue 3 (Options API), SFCs, Client-Side Rendering  
 **Duration:** 1.5–2 hours
 
-**Concepts & tools:** Vite (build tool, dev server) · Vue 3 · Single File Components (.vue) · `<script setup>`, `<template>`, `<style scoped>` · main.js, createApp, mount · client-side vs server-side · SPA (no full-page reloads)
+**Concepts & tools:** Vite (build tool, dev server) · Vue 3 with **Options API** · Single File Components (.vue) · `export default { }` with `<template>`, `<style scoped>` · main.js, createApp, mount · client-side vs server-side · SPA (no full-page reloads)
 
 ### Practical
 - [ ] Create minimal Vite + Vue 3 project (or use starter)
-- [ ] One `.vue` component: message + scoped style
+- [ ] One `.vue` component using Options API: message in `data()`, scoped style
 - [ ] Run dev server, see hot reload
 
 ---
 
-## Day 3 — Reactivity, Directives, Events  
+## Day 3 — Module 2: Reactivity, Computed, Directives, Events  
 **Duration:** 1.5–2 hours
 
-**Concepts & tools:** Reactive state · `data()` · `v-model` (two-way binding) · `v-for` and `:key` · `v-if` · `@click` · `@submit.prevent` (forms without refresh) · client-side updates, API in background
+**Concepts & tools:** Reactive state · `data()` · **computed properties** (derived state, caching) · `v-model` (two-way binding) · `v-for` and `:key` · `v-if` · `@click` · `@submit.prevent` (forms without refresh) · client-side updates, API in background
+
+**Learn more (Vue official guide):** [Computed Properties](https://vuejs.org/guide/essentials/computed.html) — when to use computed vs methods, caching, writable computed.
 
 ### Practical
 - [ ] Task list in `data()`, render with `v-for`
+- [ ] One **computed** (e.g. "Has tasks?" or filtered list)
 - [ ] Form with `v-model` and `@submit.prevent` to add task (in-memory ok)
 - [ ] `v-if` for “No tasks” when empty
 
@@ -155,6 +162,15 @@ No formal session. Optional: light recap of stack and APP Dev I (routing, Jinja,
 ### Practical
 - [ ] One CSV export endpoint; one Celery task that “sends” report (or writes to file)
 - [ ] Loading state + one success/error message; optional simple store for current user
+
+---
+
+## Learn more about Vue
+
+Use the **official Vue.js guide** to go deeper. We use Vue 3 with the **Options API**, so focus on those sections.
+
+- **Computed properties:** [https://vuejs.org/guide/essentials/computed.html](https://vuejs.org/guide/essentials/computed.html) — derived state, caching, when to use computed vs methods.
+- **Vue 3 docs:** [https://vuejs.org/guide](https://vuejs.org/guide) — template syntax, reactivity, components, and more. Pick "Options API" where the guide offers a choice.
 
 ---
 

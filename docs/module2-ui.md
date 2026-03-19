@@ -6,7 +6,7 @@ nav_order: 3
 
 # Module 2: The Interactive UI (Directives & Props)
 
-**Goal:** Learn how to make your webpage reactive—where the UI changes instantly when data changes.
+**Goal:** Learn how to make your webpage reactive—where the UI changes instantly when data changes. We use **Vue 3 with the Options API** (`data()`, `computed`, `methods` in `export default { }`).
 
 ---
 
@@ -27,7 +27,35 @@ export default {
 
 ---
 
-## 2. Directives (The "v-" logic)
+## 2. Computed Properties (derived state)
+
+When you need a value that **depends on your data** (e.g. "are there any tasks?", a filtered list), use **computed**. Vue caches the result and only recomputes when the underlying data changes.
+
+```javascript
+export default {
+    data() {
+        return {
+            tasks: []
+        }
+    },
+    computed: {
+        hasTasks() {
+            return this.tasks.length > 0
+        },
+        completedCount() {
+            return this.tasks.filter(t => t.completed).length
+        }
+    }
+}
+```
+
+In the template: `{{ hasTasks ? 'Yes' : 'No' }}` or `{{ completedCount }}`. Prefer computed over putting complex logic in the template or calling a method repeatedly.
+
+**Learn more:** [Computed Properties \| Vue.js](https://vuejs.org/guide/essentials/computed.html) — caching, when to use computed vs methods, writable computed.
+
+---
+
+## 3. Directives (The "v-" logic)
 
 Vue uses special attributes called **Directives** to add logic to your HTML.
 
@@ -61,7 +89,7 @@ Only shows an element if a condition is true.
 
 ---
 
-## 3. Event Handling (`@`)
+## 4. Event Handling (`@`)
 
 Instead of `onclick`, Vue uses `@`.
 
@@ -76,7 +104,7 @@ Instead of `onclick`, Vue uses `@`.
 
 ---
 
-## 4. Why no Refreshes?
+## 5. Why no Refreshes?
 
 In MAD 1, every button click usually caused a page reload. In MAD 2, we stay on the same page. We send data to the server in the background, and Vue updates only the parts of the page that changed.
 
@@ -85,8 +113,11 @@ In MAD 1, every button click usually caused a page reload. In MAD 2, we stay on 
 ## Key Takeaways
 
 1. **`data()`**: The container for all your dynamic information.
-2. **`v-model`**: Essential for forms and user input.
-3. **`@submit.prevent`**: The standard way to handle form logic without reloading.
+2. **`computed`**: Use for derived state (e.g. "has tasks?", counts); Vue caches and only recomputes when dependencies change.
+3. **`v-model`**: Essential for forms and user input.
+4. **`@submit.prevent`**: The standard way to handle form logic without reloading.
+
+For more on Vue (Options API, reactivity, components), see the [Vue.js Guide](https://vuejs.org/guide).
 
 ---
 
