@@ -6,7 +6,7 @@ nav_order: 2
 
 # Module 1: The Modern Stack (Vite & Vue 3)
 
-**Goal:** Understand the shift from a monolith (Flask + Jinja) to a decoupled frontend using Vue 3 and Vite.
+**Goal:** Understand the shift from a monolith (Flask + Jinja) to a decoupled frontend using Vue 3 and Vite. We use **Vue 3 with the Options API** (`export default { data(), computed, methods }` in `.vue` files).
 
 ---
 
@@ -19,12 +19,18 @@ In **MAD 2**, we use **Vite**. It is a modern build tool that makes frontend dev
 
 In Vue, we use `.vue` files. These are called **Single File Components**. Instead of having HTML, CSS, and JS in different places, everything for one component lives in one file.
 
-### Structure of a `.vue` file:
+### Structure of a `.vue` file (Options API):
 ```vue
 {% raw %}
-<script setup>
-// This is the "Brain" (Logic)
-const message = "Hello from Vue!"
+<script>
+// This is the "Brain" (Logic) — Options API
+export default {
+  data() {
+    return {
+      message: 'Hello from Vue!'
+    }
+  }
+}
 </script>
 
 <template>
@@ -33,13 +39,15 @@ const message = "Hello from Vue!"
 </template>
 
 <style scoped>
-/* This is the "Beauty" (CSS) - scoped means it only affects this file! */
+/* This is the "Beauty" (CSS) — scoped means it only affects this file! */
 h1 {
   color: #42b983;
 }
 </style>
 {% endraw %}
 ```
+
+Later you will add **`computed`**, **`methods`**, and lifecycle hooks in the same `export default { }` block. See [Creating an Application](https://vuejs.org/guide/essentials/application.html) and [Single-File Components](https://vuejs.org/guide/scaling-up/sfc.html) in the Vue guide.
 
 ---
 
@@ -70,9 +78,12 @@ app.mount('#app') // Connects to <div id="app"> in index.html
 
 ## Key Takeaways
 
-1. **Vite**: The "engine" that runs your frontend development.
-2. **SFCs**: Combining Template, Script, and Style into one `.vue` file.
-3. **Mounting**: How the Vue app attaches itself to the webpage.
+1. **Vite**: The "engine" that runs your frontend development (dev server + build).
+2. **SFCs**: One `.vue` file with `<script>`, `<template>`, and `<style scoped>`.
+3. **Options API**: Use `export default { data() { return { ... } } }` for reactive state in each component.
+4. **Mounting**: `main.js` calls `createApp(App).mount('#app')` to attach the root component to the page.
+
+**Learn more:** [Vue.js Guide](https://vuejs.org/guide) — choose **Options API** where the docs offer a choice.
 
 ---
 
