@@ -6,24 +6,92 @@ nav_order: 2
 
 # Module 1: The Modern Stack (Vite & Vue 3)
 
-**Goal:** Set up the **Vite + Vue 3** workflow and learn how to split the UI into **components** so you can build simple multi-part screens. We use **Vue 3 with the Options API** (`export default { data(), methods, components }` in `.vue` files).
+**Goal:** Create a **Vue 3 + Vite** project from scratch, pick the right tooling, and understand **Single File Components** and **local components**. We use the **Options API** (`export default { data(), methods, components }`).
 
-By the end of Module 1 + Module 2 together, you should be able to build a **small SPA**: multiple views, reusable pieces, forms, lists, and data loading.
+By the end of Module 1 + Module 2, you should run **`npm run dev`**, open the SPA, and be ready to add **Vue Router**, **axios**, and Flask-backed screens.
 
 ---
 
 ## 1. What is Vite?
 
 In MAD 1, the browser requested a page, and Flask sent back the full HTML.
-In **MAD 2**, we use **Vite**. It is a modern build tool that makes frontend development incredibly fast. It serves your code to the browser and handles all the complex "bundling" behind the scenes.
+In **MAD 2**, we use **Vite**. It is a modern build tool and dev server: it serves your `.vue` files to the browser and bundles them for production.
 
 ---
 
-## 2. Single File Components (SFCs)
+## 2. Create a new Vue project
 
-In Vue, we use `.vue` files. These are called **Single File Components**. Instead of having HTML, CSS, and JS in different places, everything for one component lives in one file.
+From a terminal (Node.js installed):
 
-### Structure of a `.vue` file (Options API):
+```bash
+npm create vue@latest task-manager-frontend
+```
+
+You can replace `task-manager-frontend` with any folder name (e.g. `my-first-vue-app`).
+
+Then enter the folder and install dependencies:
+
+```bash
+cd task-manager-frontend
+npm install
+```
+
+Start the dev server:
+
+```bash
+npm run dev
+```
+
+Vite prints a local URL (often `http://localhost:5173`). Open it in your browser.
+
+---
+
+## 3. Feature selection (`npm create vue@latest`)
+
+When the wizard shows a **checkbox menu**, use **Space** to toggle options and **Enter** to continue.
+
+**Suggested selection:**
+
+| Option | Enable? |
+|:---|:---|
+| **Router** (SPA / `vue-router`) | Yes — we use Vue Router in Module 2 |
+| **ESLint** | Yes — catches mistakes early |
+| **Prettier** | Yes — consistent formatting |
+
+Leave other extras (TypeScript, Pinia, Vitest, etc.) **off** unless you already know you want them.
+
+**Experimental features:** Press **Enter** without selecting anything (skip).
+
+**“Skip example code?”** Choose **No** — keep the starter example so you can learn from generated files, then replace or extend them.
+
+{: .note }
+If you already created the project **without** Router, add it later: `npm install vue-router@4` and follow Module 2’s router setup.
+
+---
+
+## 4. Install extra packages (HTTP + routing)
+
+For the task-manager style app in Module 2, you typically need **axios** (HTTP) and **Vue Router** (if you did not enable Router in the wizard):
+
+```bash
+cd task-manager-frontend
+npm install axios vue-router@4
+```
+
+---
+
+## 5. Official guide: Vue + Vite
+
+For the **full, up-to-date** steps (wizard options, TypeScript, etc.), use the official docs:
+
+- **[Quick Start — Creating a Vue application](https://vuejs.org/guide/quick-start.html#creating-a-vue-application)** — `npm create vue@latest`, project structure, `npm run dev` / `npm run build`.
+
+---
+
+## 6. Single File Components (SFCs)
+
+Each **`.vue`** file is a **Single File Component**: `<script>`, `<template>`, and optional `<style scoped>` in one place.
+
 ```vue
 {% raw %}
 <script>
@@ -48,18 +116,17 @@ h1 {
 {% endraw %}
 ```
 
-You will add **`computed`**, **`methods`**, **`props`**, lifecycle hooks, and **`components`** in the same `export default { }` block as you grow.
+Add **`computed`**, **`methods`**, **`props`**, lifecycle hooks, and **`components`** in the same `export default { }` as you grow.
 
 **Learn more:** [Creating an Application](https://vuejs.org/guide/essentials/application.html) · [Single-File Components](https://vuejs.org/guide/scaling-up/sfc.html)
 
 ---
 
-## 3. Components (building blocks)
+## 7. Components (building blocks)
 
-A **component** is a reusable piece of UI (like a card, a navbar item, or one row in a list). Your app is a **tree**: `App.vue` contains smaller components, which can contain even smaller ones.
+A **component** is a reusable UI piece. Your app is a **tree**: `App.vue` can contain children you **import** and register.
 
-### Child component (`components/TaskItem.vue`)
-A minimal child only needs a template (and optional `name`). In **Module 2** you will add **props** so the parent can pass each row’s data.
+### Child (`components/TaskItem.vue`)
 
 ```vue
 {% raw %}
@@ -75,7 +142,8 @@ export default {
 {% endraw %}
 ```
 
-### Parent uses the child (`App.vue`)
+### Parent (`App.vue`)
+
 ```vue
 {% raw %}
 <script>
@@ -104,50 +172,47 @@ export default {
 {% endraw %}
 ```
 
-*(Same list with **`:title="item.title"`** once you learn **props** in Module 2.)*
-
-- **`import TaskItem from '...'`** then **`components: { TaskItem }`** registers it **locally** for this file only.
-- In the template you can write **`<TaskItem />`** (PascalCase) or **`<task-item />`** (kebab-case).
+- **`components: { TaskItem }`** registers the child **locally**.
+- Template: **`<TaskItem />`** or **`<task-item />`**.
 
 **Learn more:** [Components Basics](https://vuejs.org/guide/essentials/component-basics.html) · [Component Registration](https://vuejs.org/guide/components/registration.html)
 
 ---
 
-## 4. The Project Entry Point
+## 8. The project entry point (`main.js`)
 
-Every Vue app starts at `main.js`. It creates the app, optionally adds **plugins** (e.g. Vue Router in Module 2), and **mounts** the root component into `index.html`.
+`main.js` creates the app and **mounts** it to `index.html`. With **Vue Router** (Module 2), you also **`app.use(router)`** before `mount`.
 
-### `main.js` (simple app, no router yet)
 ```javascript
 import { createApp } from 'vue'
 import App from './App.vue'
 
 const app = createApp(App)
-app.mount('#app') // Connects to <div id="app"> in index.html
+app.mount('#app')
 ```
+
+`index.html` contains `<div id="app"></div>` and loads `/src/main.js` as a module — the scaffold from `create-vue` already does this.
 
 ---
 
-## 5. Why the change?
+## 9. Why the change?
 
 | Feature | MAD 1 (Jinja) | MAD 2 (Vue) |
 |:---|:---|:---|
 | **Rendering** | Server-side (Flask) | Client-side (Browser) |
-| **User Experience** | Multi-page (Redirects) | Single Page (No refreshes) |
-| **Logic** | Mostly Python | Fast Javascript |
-| **UI structure** | Templates + includes | Components + (later) routes |
+| **User Experience** | Multi-page (redirects) | Single Page App (no full reload) |
+| **Logic** | Mostly Python | JavaScript in components |
+| **UI structure** | Templates + includes | Components + routes |
 
 ---
 
 ## Key Takeaways
 
-1. **Vite**: Dev server + build for your Vue project.
-2. **SFCs**: One file = `<script>` + `<template>` + `<style scoped>`.
-3. **Components**: Import child `.vue` files and register them in `components: { }` to compose the UI.
-4. **Options API**: `export default { data(), components: { } }` is the shape of each component.
-5. **Mounting**: `createApp(App).mount('#app')` attaches the app to the page.
-
-**Next (Module 2):** Props, events (`$emit`), `methods`, directives, **computed**, **lifecycle hooks**, and **Vue Router** so you can navigate between pages and load data.
+1. **`npm create vue@latest <name>`** → **`cd`** → **`npm install`** → **`npm run dev`**.
+2. Enable **Router**, **ESLint**, and **Prettier** in the wizard; skip experimental; **do not** skip example code the first time.
+3. Add **`axios`** and **`vue-router@4`** with **`npm install`** when needed.
+4. **Vite** = dev server + production build; **SFCs** = one `.vue` file per component.
+5. **Module 2** wires **Vue Router**, **axios**, sample **views**, and **parent ↔ child** patterns end-to-end.
 
 **Learn more:** [Vue.js Guide](https://vuejs.org/guide) — choose **Options API** where the docs offer a choice.
 
