@@ -324,12 +324,46 @@ export default {
 ```javascript
 import { createApp } from 'vue'
 import App from './App.vue'
+import router from './router'
 
 const app = createApp(App)
+app.use(router)
 app.mount('#app')
 ```
 
 `index.html` contains `<div id="app"></div>` and loads `/src/main.js` as a module — the scaffold from `create-vue` already does this.
+
+### `src/App.vue` when using Router
+
+If the app is fully managed through the router, keep `App.vue` minimal:
+
+```vue
+{% raw %}
+<template>
+  <RouterView />
+</template>
+{% endraw %}
+```
+
+### `src/router/index.js`
+
+The route definitions live here. This file decides which view appears for each URL.
+
+```javascript
+import { createRouter, createWebHistory } from 'vue-router'
+import HomeView from '../views/HomeView.vue'
+import LoginView from '../views/LoginView.vue'
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    { path: '/', name: 'home', component: HomeView },
+    { path: '/login', name: 'login', component: LoginView }
+  ]
+})
+
+export default router
+```
 
 ---
 
