@@ -4,51 +4,63 @@ layout: default
 nav_order: 3
 ---
 
-# Module 2: The Interactive UI (Components, Router & Hooks)
+# Module 2: The Interactive UI (Backend Integration)
 
-**Goal:** Wire **Vue Router**, **axios**, and the **Options API** into a small SPA: multiple **views**, a **child component** (`props` + `$emit`), **lifecycle hooks**, and **template directives**. Together with Module 1, this is enough to build simple apps before Flask-RESTful (Module 3).
+**Goal:** Connect your Vue frontend to a Flask backend using **axios** or **fetch**, pass data between **parent** and **child** components, and store/retrieve auth tokens with **localStorage**.
 
 {: .note }
 Examples use `http://127.0.0.1:5000/...`. **Change host, port, and paths** to match your Flask API. Enable **CORS** on Flask when the Vue dev server runs on another origin (e.g. port 5173).
 
 ---
 
-## 1. Reactivity (`data`)
+## 1. What this module focuses on
+
+Module 1 already covered the Vue basics. In this module, we use those basics to build the bridge between Vue and Flask.
+
+The main ideas here are:
+
+- calling backend APIs with **axios** or **fetch**
+- sending data from **parent to child** with props
+- sending data from **child to parent** with `$emit`
+- storing a token in **localStorage** after login
+- reading the token back from **localStorage** when making API calls
+
+---
+
+## 2. Backend API calls with axios and fetch
+
+Use **axios** or **fetch** inside component methods when you need to talk to Flask.
 
 ```javascript
-export default {
-    data() {
-        return {
-            username: 'Guest',
-            tasks: []
-        }
-    }
+methods: {
+  async loadTasks() {
+    const token = localStorage.getItem('access_token')
+
+    const response = await axios.get('http://127.0.0.1:5000/api/tasks', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    })
+
+    this.tasks = response.data
+  },
+
+  async loadTasksWithFetch() {
+    const token = localStorage.getItem('access_token')
+
+    const response = await fetch('http://127.0.0.1:5000/api/tasks', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    })
+
+    const data = await response.json()
+    this.tasks = data
+  }
 }
 ```
 
----
-
-## 2. Computed properties
-
-```javascript
-computed: {
-    hasTasks() {
-        return this.tasks.length > 0
-    }
-}
-```
-
-**Learn more:** [Computed Properties](https://vuejs.org/guide/essentials/computed.html)
+For forms, keep `@submit.prevent` so the page does not reload.
 
 ---
 
-## 3. Methods (`methods`)
-
-Use **`methods`** for clicks, submits, and **axios** calls. Prefer **`@submit.prevent`** on `<form>` so the page does not reload.
-
----
-
-## 4. Vue Router + minimal project layout
+## 3. Vue Router + minimal project layout
 
 After **`npm create vue@latest`** (with **Router** enabled) or after **`npm install vue-router@4`**, your **src** tree can look like this:
 
@@ -134,11 +146,11 @@ export default createRouter({
 
 ---
 
-## 5. Example views and child component
+## 4. Example views, API calls, and child component
 
 ### `src/views/HomeView.vue`
 
-Parent passes **`msg`** to **`CompA`** and listens for **`@send-data`**. Adjust **`hello()`** to hit a real Flask route (the sample below mirrors a common class exercise pattern).
+Parent passes **`msg`** to **`CompA`** and listens for **`@send-data`**. The view below also shows how to call a backend API with **axios** and how to read a token from **localStorage**.
 
 ```vue
 {% raw %}
@@ -175,13 +187,13 @@ export default {
       alert('Hello world! ' + this.data)
     },
     async hello() {
-      const token = localStorage.getItem('token')
-      const response = await axios.get('http://127.0.0.1:5000/register', {
+      const token = localStorage.getItem('access_token')
+      const response = await axios.get('http://127.0.0.1:5000/api/tasks', {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       })
       console.log(response)
-      this.users = response.data.user
-      alert(response.data.msg)
+      this.users = response.data
+      alert('Tasks loaded')
     },
     onChildData(payload) {
       alert('received from child: ' + payload)
@@ -234,7 +246,7 @@ export default {
 
 ### `src/views/LoginView.vue`
 
-Use **`@submit.prevent`** on the form so **Enter** in an input does not reload the page.
+Use **`@submit.prevent`** on the form so **Enter** in an input does not reload the page. Save the token in **localStorage** after a successful login.
 
 ```vue
 {% raw %}
@@ -267,7 +279,7 @@ export default {
       alert(response.data.msg)
       const token = response.data.token
       if (token) {
-        localStorage.setItem('token', token)
+        localStorage.setItem('access_token', token)
       }
     }
   }
@@ -321,7 +333,7 @@ export default {
 
 ---
 
-## 6. Props (parent → child) and `$emit` (child → parent)
+## 5. Props (parent → child) and `$emit` (child → parent)
 
 | Direction | Mechanism |
 |:---|:---|
@@ -334,84 +346,29 @@ See **`CompA`** + **`HomeView`** above for a full example.
 
 ---
 
-## 7. Template directives (quick reference)
+## 6. Token storage and retrieval with localStorage
 
-### `v-if` / `v-else-if` / `v-else`
-
-```html
-{% raw %}
-<div>
-  <p v-if="items.length === 0">No items</p>
-  <p v-else-if="loading">Loading…</p>
-  <p v-else>Found {{ items.length }} items</p>
-</div>
-{% endraw %}
-```
-
-### `v-show`
-
-Element stays in the DOM; toggles visibility with CSS.
-
-```html
-{% raw %}
-<div v-show="isVisible">Toggled with v-show</div>
-{% endraw %}
-```
-
-### `v-for` (lists)
-
-Always use a stable **`:key`** (e.g. `id`).
-
-```html
-{% raw %}
-<ul>
-  <li v-for="item in items" :key="item.id">
-    {{ item.title }}
-  </li>
-</ul>
-{% endraw %}
-```
-
-### `v-bind` and `v-on` shorthands
-
-- **`:title="expr"`** is short for **`v-bind:title="expr"`**
-- **`@click="fn"`** is short for **`v-on:click="fn"`**
-
-**Learn more:** [Template Syntax](https://vuejs.org/guide/essentials/template-syntax.html) · [Conditional Rendering](https://vuejs.org/guide/essentials/conditional.html) · [List Rendering](https://vuejs.org/guide/essentials/list.html)
-
----
-
-## 8. Lifecycle hooks (examples)
+Use localStorage to keep the token after login, then read it back whenever you call a protected API.
 
 ```javascript
-export default {
-  data() {
-    return { items: [] }
-  },
-  created() {
-    // Before mount — good for setup that does not need the DOM
-    // this.fetchItems()
-  },
-  mounted() {
-    // DOM is ready — APIs, focus, third-party widgets
-    console.log('component mounted')
-  },
-  beforeUnmount() {
-    // Cleanup: timers, listeners
-  },
-  methods: {
-    async fetchItems() {
-      /* ... */
-    }
+// save token after login
+localStorage.setItem('access_token', token)
+
+// read token before API calls
+const token = localStorage.getItem('access_token')
+```
+
+```javascript
+methods: {
+  logout() {
+    localStorage.removeItem('access_token')
   }
 }
 ```
 
-**Learn more:** [Lifecycle Hooks](https://vuejs.org/guide/essentials/lifecycle.html)
-
 ---
 
-## 9. Axios patterns (`methods`)
+## 7. Axios patterns (`methods`)
 
 ### `data()` shape
 
@@ -459,12 +416,11 @@ methods: {
 }
 ```
 
-### Standalone axios calls
+### Fetch pattern
 
 ```javascript
-await axios.get('http://127.0.0.1:5000/api/items')
-await axios.post('http://127.0.0.1:5000/api/items', { title: 'hello' })
-await axios.delete('http://127.0.0.1:5000/api/items/123')
+const response = await fetch('http://127.0.0.1:5000/api/items')
+const data = await response.json()
 ```
 
 ### Parent / child summary
@@ -497,7 +453,7 @@ methods: {
 
 ---
 
-## 10. Navigation (`router-link` / `$router`)
+## 8. Navigation (`router-link` / `$router`)
 
 In any component template:
 
@@ -518,7 +474,7 @@ Read URL params / query: **`this.$route.params`**, **`this.$route.query`**.
 
 ---
 
-## 11. Why no full page refreshes?
+## 9. Why no full page refreshes?
 
 Vue updates the DOM in place; **Vue Router** swaps views. Flask serves **JSON**; the browser does not reload the whole HTML page for each action (as long as you use **`@submit.prevent`** and client-side navigation).
 
@@ -526,13 +482,11 @@ Vue updates the DOM in place; **Vue Router** swaps views. Flask serves **JSON**;
 
 ## Key Takeaways
 
-1. **`main.js`**: `createApp(App).use(router).mount('#app')`.
-2. **`router/index.js`**: `createWebHistory`, **`routes`**, export **`createRouter`**.
-3. **`App.vue`**: **`RouterView`** (and optional **`router-link`** nav).
-4. **Forms**: **`@submit.prevent`** + **`type="submit"`** on the button.
-5. **axios** + **`localStorage`** for tokens; **props** + **`$emit`** for parent/child.
-6. **Directives**: `v-if` / `v-else`, **`v-show`**, **`v-for` + `:key`**, **`:prop`** and **`@event`** shorthands.
-7. **Lifecycle**: e.g. **`mounted`** for API calls and DOM setup.
+1. Module 1 covers the Vue basics; Module 2 focuses on wiring the frontend to the backend.
+2. Use **axios** or **fetch** to call Flask APIs from Vue components.
+3. Store auth tokens in **localStorage** after login and read them back for protected requests.
+4. Use **props** to send data from parent to child and **`$emit`** to send data back.
+5. `router-link` and `$router` handle navigation when you need route changes.
 
 **Learn more:** [Vue.js Guide](https://vuejs.org/guide) (Options API) · [Vue Router](https://router.vuejs.org/)
 
