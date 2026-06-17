@@ -8,6 +8,20 @@ nav_order: 4
 
 **Goal:** Turn your Flask app into a "Data Server" using Flask-RESTful.
 
+## Install Packages
+
+Run this once in the backend folder to install the Flask packages used in this module:
+
+```bash
+pip install flask flask-restful flask-cors
+```
+
+If you want to use axios in the frontend examples below, install it in the Vue app too:
+
+```bash
+npm install axios
+```
+
 ---
 
 ## 1. What is a RESTful API?
@@ -25,11 +39,42 @@ from flask_restful import Resource
 class TaskResource(Resource):
     def get(self):
         # Logic to "Read" tasks
-        return {"id": 1, "title": "Buy Milk"}
+        return {"tasks": [{"id": 1, "title": "Buy Milk", "completed": False}]}
 
     def post(self):
         # Logic to "Create" a task
         return {"message": "Created!"}, 201
+
+    def put(self):
+        # Logic to "Update" a task
+        return {"message": "Updated!"}, 200
+
+    def delete(self):
+        # Logic to "Delete" a task
+        return {"message": "Deleted!"}, 200
+```
+
+For a single task, you usually accept an id in the URL:
+
+```python
+from flask_restful import Resource
+
+class TaskDetailResource(Resource):
+    def get(self, task_id):
+        return {"id": task_id, "title": "Buy Milk", "completed": False}
+
+    def post(self, task_id):
+        return {"message": f"Created task {task_id}"}, 201
+
+    def delete(self, task_id):
+        return {"message": f"Deleted task {task_id}"}, 200
+```
+
+Example route registration:
+
+```python
+api.add_resource(TaskResource, '/api/tasks')
+api.add_resource(TaskDetailResource, '/api/tasks/<int:task_id>')
 ```
 
 ---
@@ -73,13 +118,16 @@ The API doesn't send HTML. It sends **JSON** (Javascript Object Notation). It lo
 
 From your Vue app (e.g. in a `methods` block with the Options API), you call the Flask backend using `fetch` or a library like **axios**. CORS allows the browser to accept responses from a different origin (e.g. Vue on `localhost:5173`, Flask on `localhost:5001`).
 
+### Using axios
+
+If your Vue app already has axios installed, the calls below are a simple pattern to follow.
+
 **GET (read tasks):**
 ```javascript
 methods: {
     async fetchTasks() {
-        const resp = await fetch('http://localhost:5001/api/tasks')
-        const data = await resp.json()
-        this.tasks = data.tasks  // or data, depending on your API shape
+        const response = await axios.get('http://localhost:5001/api/tasks')
+        this.tasks = response.data.tasks  // or response.data, depending on your API shape
     }
 }
 ```
@@ -88,16 +136,27 @@ methods: {
 ```javascript
 methods: {
     async addTask() {
-        const resp = await fetch('http://localhost:5001/api/tasks', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: this.newTitle, completed: false })
+        const response = await axios.post('http://localhost:5001/api/tasks', {
+            title: this.newTitle,
+            completed: false
         })
-        const data = await resp.json()
-        this.tasks.push(data)  // or refresh the list
+        this.tasks.push(response.data)  // or refresh the list
     }
 }
 ```
+
+**DELETE (remove task):**
+
+```javascript
+methods: {
+    async removeTask(taskId) {
+        await axios.delete(`http://localhost:5001/api/tasks/${taskId}`)
+        this.tasks = this.tasks.filter(task => task.id !== taskId)
+    }
+}
+```
+
+You can still use `fetch` if you want, but axios keeps the request and response handling a little cleaner for these examples.
 
 Call `fetchTasks()` when the component loads (e.g. in a lifecycle hook) and wire `addTask` to your form's `@submit.prevent`. Once CORS is enabled on Flask, the Vue app and the API work together as one "bridge."
 

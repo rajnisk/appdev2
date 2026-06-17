@@ -8,6 +8,12 @@ nav_order: 6
 
 **Goal:** Make your API lightning fast by remembering the results of expensive operations.
 
+Install the required backend packages with:
+
+```bash
+pip install flask-caching redis
+```
+
 ---
 
 ## 1. What is Caching?
@@ -35,6 +41,22 @@ cache = Cache(config={'CACHE_TYPE': 'RedisCache', 'CACHE_REDIS_URL': 'redis://lo
 cache.init_app(app)
 ```
 
+### Caching and clearing data
+
+You can also cache a value manually, read it later, and clear it when the data changes.
+
+```python
+# Save something in cache
+cache.set('task_count', 25, timeout=60)
+
+# Read it back
+count = cache.get('task_count')
+
+# Clear one cached value or clear everything
+cache.delete('task_count')
+cache.clear()
+```
+
 ### The Magic Decorator: `@cache.cached`
 You can tell Flask to remember the result of an API call for a specific amount of time (e.g., 60 seconds).
 
@@ -45,6 +67,21 @@ class TaskResource(Resource):
         # This code only runs ONCE every 60 seconds!
         # Everyone else gets the "pre-chopped" result from Redis.
         return Task.query.all()
+```
+
+When a task is created, updated, or deleted, clear the cached task list so the next request gets fresh data.
+
+```python
+class TaskResource(Resource):
+    def post(self):
+        # create task here
+        cache.clear()
+        return {"message": "Task created"}, 201
+
+    def delete(self):
+        # delete task here
+        cache.clear()
+        return {"message": "Task deleted"}, 200
 ```
 
 ---
