@@ -6,7 +6,7 @@ nav_order: 2
 
 # Module 1: The Modern Stack (Vite & Vue 3)
 
-**Goal:** Create a **Vue 3 + Vite** project from scratch, pick the right tooling, and understand **Single File Components** and **local components**. We use the **Options API** (`export default { data(), methods, components }`).
+**Goal:** Create a **Vue 3 + Vite** project from scratch, pick the right tooling, and understand **Single File Components**, **template basics**, and **local components**. We use the **Options API** (`export default { data, methods, computed, components, mounted, created }`).
 
 By the end of Module 1 + Module 2, you should run **`npm run dev`**, open the SPA, and be ready to add **Vue Router**, **axios**, and Flask-backed screens.
 
@@ -122,7 +122,145 @@ Add **`computed`**, **`methods`**, **`props`**, lifecycle hooks, and **`componen
 
 ---
 
-## 7. Components (building blocks)
+## 7. Template basics and the Options API
+
+### `{{ }}` text interpolation
+
+Use double curly braces to show data from your component in the template.
+
+```vue
+{% raw %}
+<template>
+  <p>Hello, {{ name }}</p>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      name: 'Suraj'
+    }
+  }
+}
+</script>
+{% endraw %}
+```
+
+### `v-if`, `v-else`, and `v-for`
+
+```vue
+{% raw %}
+<template>
+  <div>
+    <p v-if="isLoggedIn">Welcome back!</p>
+    <p v-else>Please log in.</p>
+
+    <ul>
+      <li v-for="task in tasks" :key="task.id">{{ task.title }}</li>
+    </ul>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      isLoggedIn: true,
+      tasks: [
+        { id: 1, title: 'Learn Vue' },
+        { id: 2, title: 'Build a task app' }
+      ]
+    }
+  }
+}
+</script>
+{% endraw %}
+```
+
+### `input` and `v-model`
+
+Use `v-model` to connect an input field to component data.
+
+```vue
+{% raw %}
+<template>
+  <div>
+    <input v-model="newTask" type="text" placeholder="Enter a task" />
+    <p>You typed: {{ newTask }}</p>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      newTask: ''
+    }
+  }
+}
+</script>
+{% endraw %}
+```
+
+### Lifecycle hooks: `created` and `mounted`
+
+Use `created()` for setup that does not need the DOM yet, and `mounted()` when the page is on screen.
+
+```javascript
+export default {
+  data() {
+    return {
+      message: 'Loading...'
+    }
+  },
+  created() {
+    console.log('created: data is ready')
+  },
+  mounted() {
+    console.log('mounted: DOM is ready')
+    this.message = 'Page loaded'
+  }
+}
+```
+
+### Common Options API sections
+
+| Option | What it does |
+|:---|:---|
+| **data** | Stores component state such as text, lists, and form values |
+| **methods** | Holds functions for clicks, submits, and other actions |
+| **computed** | Stores values that are calculated from other data |
+| **components** | Registers child components used in the template |
+| **created** | Runs after the component is set up, before the DOM exists |
+| **mounted** | Runs after the component is added to the page |
+
+### Small example using the Options API
+
+```javascript
+export default {
+  data() {
+    return {
+      firstName: 'Vue',
+      lastName: 'Student'
+    }
+  },
+  computed: {
+    fullName() {
+      return `${this.firstName} ${this.lastName}`
+    }
+  },
+  methods: {
+    changeName() {
+      this.firstName = 'Task'
+      this.lastName = 'Manager'
+    }
+  }
+}
+```
+
+---
+
+## 8. Components (building blocks)
 
 A **component** is a reusable UI piece. Your app is a **tree**: `App.vue` can contain children you **import** and register.
 
@@ -179,7 +317,7 @@ export default {
 
 ---
 
-## 8. The project entry point (`main.js`)
+## 9. The project entry point (`main.js`)
 
 `main.js` creates the app and **mounts** it to `index.html`. With **Vue Router** (Module 2), you also **`app.use(router)`** before `mount`.
 
@@ -195,7 +333,7 @@ app.mount('#app')
 
 ---
 
-## 9. Why the change?
+## 10. Why the change?
 
 | Feature | MAD 1 (Jinja) | MAD 2 (Vue) |
 |:---|:---|:---|
