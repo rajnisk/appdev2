@@ -22,6 +22,12 @@ If you want to use axios in the frontend examples below, install it in the Vue a
 npm install axios
 ```
 
+If you want the modular Flask example below, install the backend dependencies with:
+
+```bash
+pip install flask flask-restful flask-sqlalchemy flask-cors
+```
+
 ---
 
 ## 1. What is a RESTful API?
@@ -75,6 +81,163 @@ Example route registration:
 ```python
 api.add_resource(TaskResource, '/api/tasks')
 api.add_resource(TaskDetailResource, '/api/tasks/<int:task_id>')
+```
+
+---
+
+## 2.1 Modular Flask example
+
+The example below splits the app into small files so each file has one job:
+
+- `extensions.py` creates shared objects like `db`
+- `models.py` defines database models
+- `routes.py` keeps the request handlers
+- `app.py` is the entry point that starts the app
+
+This version is intentionally small and copy-pasteable. It gives you one `GET` route and one `POST` route.
+
+### `extensions.py`
+
+```python
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
+```
+
+### `models.py`
+
+```python
+from extensions import db
+
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
+    # "admin" | "employee" — only seeded admin or future tooling should set admin
+    role = db.Column(db.String(20), nullable=False, default="employee")
+    # Used for Flask-Mail reminders; optional for older rows
+    email = db.Column(db.String(120), nullable=True)
+
+    tasks = db.relationship(
+        "Task",
+        backref="owner",
+        lazy=True,
+        cascade="all, delete-orphan",
+    )
+
+
+class Task(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, default="")
+    status = db.Column(db.String(40), default="Pending")
+    priority = db.Column(db.String(20), default="Medium")
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "status": self.status,
+            "priority": self.priority,
+            "user_id": self.user_id,
+        }
+```
+
+### `routes.py`
+
+```python
+from flask import jsonify, request
+from flask_restful import Api, Resource
+
+from extensions import db
+from models import Task
+
+
+def register_routes(app):
+    api = Api(app)
+
+    class TaskListResource(Resource):
+        def get(self):
+            tasks = Task.query.order_by(Task.id.desc()).all()
+            return jsonify({"tasks": [task.to_dict() for task in tasks]})
+
+        def post(self):
+            data = request.get_json() or {}
+            title = (data.get("title") or "").strip()
+
+            if not title:
+                return jsonify({"msg": "title required"}), 400
+
+            task = Task(
+                title=title,
+                description=data.get("description") or "",
+                status=data.get("status") or "Pending",
+                priority=data.get("priority") or "Medium",
+                user_id=data.get("user_id") or 1,
+            )
+            db.session.add(task)
+            db.session.commit()
+            return jsonify({"task": task.to_dict(), "msg": "Task created"}), 201
+
+    api.add_resource(TaskListResource, "/api/tasks")
+```
+
+### `app.py`
+
+```python
+from flask import Flask
+from flask_cors import CORS
+
+from extensions import db
+from models import User
+from routes import register_routes
+
+
+def seed_default_user():
+    if User.query.first():
+        return
+
+    user = User(
+        username="admin",
+        password_hash="demo-password-hash",
+        role="employee",
+        email=None,
+    )
+    db.session.add(user)
+    db.session.commit()
+
+
+def create_app():
+    app = Flask(__name__)
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///taskmanager.db"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+    db.init_app(app)
+    CORS(app)
+    register_routes(app)
+
+    with app.app_context():
+        db.create_all()
+        seed_default_user()
+
+    return app
+
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(debug=True, host="127.0.0.1", port=5000)
+```
+
+If you want a startup route for checking that the server is running, add this to `routes.py` inside `register_routes(app)`:
+
+```python
+    @app.route("/")
+    def home():
+        return {"msg": "Flask API is running"}
 ```
 
 ---
